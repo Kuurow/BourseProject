@@ -22,8 +22,12 @@ namespace StructTest1
     {
         static public int[] MonthDaysbix = new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
         static public int[] MonthDays = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+        static public int tailleOctetsStruct = sizeof(float) * 7;
+        
+
 
         static public string filePath = @"..\..\..\..\CAC_40_1990_test.txt";
+        const string fileNameData = @"..\..\..\..\data.dat";
 
         static int IsLeapYear(int Year)
         {
@@ -125,9 +129,10 @@ namespace StructTest1
 
         static void Main(string[] args)
         {
-            
+            BinaryReader br = null;
+            FileStream fs = null;        
             string[] lines = System.IO.File.ReadAllLines(filePath);
-            int countLines = 0;
+            int countLines = 0;            
 
             System.Console.WriteLine("Contenu de CAC_40_1990_test = ");
 
@@ -236,16 +241,35 @@ namespace StructTest1
                         Console.WriteLine(curDate);
                         Console.WriteLine(curDate.DateConvertie);
 
+                        using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameData, FileMode.Create)))
+                        {
+                            writer.Write(curDate.DateConvertie);
+                            writer.Write(curDate.Ouverture);
+                            writer.Write(curDate.Eleve);
+                            writer.Write(curDate.Faible);
+                            writer.Write(curDate.Cloture);
+                            writer.Write(curDate.ClotureAjuste);
+                            writer.Write(curDate.Volume);
+                        }
+                   
                         Console.WriteLine(DoDecodeDate2((int)Date, ref Date));
                         // Console.WriteLine("Date encodée : " + Date);
                     }
-                    
                     Console.WriteLine("--------------------------------");
-                    Console.WriteLine(sizeof(float)*7);
-                } // Fin traitement
+                } // Fin traitement          
 
-            } // Fin traitement lignes       
-            //Console.WriteLine(TabStructToBinaire.Length);
+            } // Fin traitement lignes              
+            fs = File.Open(fileNameData, FileMode.Open);
+            fs.Seek((tailleOctetsStruct - 28), SeekOrigin.Begin);
+            br = new BinaryReader(fs);//traduie de binaire en donnée lisible 
+
+            while (fs.Position < tailleOctetsStruct) Console.Write(br.ReadSingle() + " ");
+            Console.WriteLine("\n-----------------");
+            Console.WriteLine(fs.Position);
+
+            br.Close(); // une seul fois
+            // Keep the console window open in debug mode.
+            Console.WriteLine("Press any key to exit.");
         }        
     }
 }
