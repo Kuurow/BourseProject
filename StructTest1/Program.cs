@@ -22,14 +22,16 @@ namespace StructTest1
     {
         static public int[] MonthDaysbix = new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
         static public int[] MonthDays = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-        static public int tailleOctetsStruct = sizeof(float) * 7;
-        
-
+        static public int tailleOctetsStruct = 7;
+        static public char[] charsSeparateur = new char[] { ' ', (char)9 }; // (char)9 = "\t" qui est le tab
+        static int countLines = 0;           
+        static public BinaryWriter bw;
 
         static public string filePath = @"..\..\..\..\CAC_40_1990_test.txt";
         const string fileNameData = @"..\..\..\..\data.dat";
 
-        static int IsLeapYear(int Year)
+        static int IsLeapYear(int Year) 
+        // Recherche si l'année est bisextile ou non
         {
             if (((Year % 4) == 0) && (((Year % 100) != 0)) || ((Year % 400) == 0))
                 return 1;
@@ -37,24 +39,8 @@ namespace StructTest1
                 return 0;
         }
 
-        //static bool DoEncodeDate(int Year, int Month, int Day, ref int Date)
-        //{
-        //    int cptAnneesBis = 0;
-        //    Date = 365 * Year + Day;    // On ajoute le nombre de jours (moyenne 365) fois le nombre d'années et le nombre de jours entré en paramètre           
-
-        //    for (int i = 0; i < Year-1; i++)
-        //    {
-        //        cptAnneesBis = cptAnneesBis + IsLeapYear(i);    // On compte le nombre d'années bisextiles entre l'année 0000 et l'année entrée
-        //    }
-
-        //    Date = Date + ((Month + 1) / 2 + Month / 8) + cptAnneesBis; // On ajoute au nombre de jours déjà compté le 
-
-        //    Console.WriteLine("M/8 : " + (Date + ((Month + 1) / 2 + Month/8) + cptAnneesBis));
-
-        //    return true;
-        //}    
-
-        static bool DoEncodeDate2(int Year, int Month, int Days, ref int Date)
+        static bool DoEncodeDate(int Year, int Month, int Days, ref int Date)
+        // Encodage de la date
         {
             int[] tabAnnee;
 
@@ -64,49 +50,15 @@ namespace StructTest1
             if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Days >= 1) && (Days <= tabAnnee[Month - 1]))
             {                       
                 int result = Year * 10000 + Month * 100 + Days;
-
                 //Console.WriteLine("date convertie : " + result);                
-
                 Date = result;
-
                 return true;
             }
 
             return false;
         }
 
-        //static bool DoDecodeDate(int convertedDate, ref int decodedDate)
-        //{
-        //    int cptAnneesBis = 0;
-        //    int cvtDate = convertedDate;
-
-        //    int J001 = 365; // nombre de jours dans une année
-        //    int J004 = J001 * 4 + 1; // Nombre de jours dans 4 années
-        //    int J100 = J004 * 25 - 1; // Nombre de jours dans 100 années
-        //    int J400 = J100 * 4 + 1; // Nombre de jours dans 400 années
-
-        //    int A400 = (convertedDate / J400) * 400;    // on recherche le nombre de paquets de 400 ans dans l'année encodée
-        //    convertedDate = convertedDate % J400;
-
-        //    int A100 = (convertedDate / J100) * 100;    // on recherche le nombre de paquets de 100 ans dans l'année encodée
-        //    convertedDate = convertedDate % J100;
-
-        //    int A004 = (convertedDate / J004) * 4;      // on recherche le nombre de paquets de 4 ans dans l'année encodée
-        //    convertedDate = convertedDate % J004;
-
-        //    int A001 = (convertedDate / J001);          // on recherche le nombre de paquets d'un an dans l'année encodée
-        //    convertedDate = convertedDate % J001;
-
-        //    decodedDate = A400 + A100 + A004 + A001;    // On calcule l'année
-
-        //    Console.WriteLine(A400 + " " + A100 + " " + A004 + " " + A001);
-
-            
-
-        //    return true;
-        //}
-
-        static bool DoDecodeDate2(int convertedDate, ref int Date)
+        static bool DoDecodeDate(int convertedDate, ref int Date)
         {
             if (convertedDate != -1)
             {
@@ -119,157 +71,183 @@ namespace StructTest1
                 int Days = convertedDate;
 
                 Console.WriteLine("année décodée : " + Year + " " + Month + " " + Days);
-
                 return true;                         
             }
             Date = -1;
-
             return false;
+        }
+
+        static void LectureTxt(string[] lines)
+        // Lecture du fichier txt
+        {
+            foreach (string line in lines)
+            {       
+                if (line.Length == 0)
+                {
+                    //Console.WriteLine("Ligne " + countLines + " vide !");
+                    //Console.WriteLine("--------------------------------");
+                }
+                else
+                {
+                    countLines++;
+                    //Console.WriteLine("Ligne " + countLines + " : " + line);
+                    //Console.WriteLine(" ");
+
+                    ConvertirLigne(line);
+
+                    //Console.WriteLine("--------------------------------");
+                } // Fin traitement          
+
+            } // Fin traitement lignes  
+        }
+
+        static void ConvertirLigne(string dbLine)
+        // Convertir la ligne courante en objet DonneesBourses
+        {
+            string[] tokensNonVerifies = dbLine.Trim(' ').Split(charsSeparateur);
+            int cptTokensVerif = 0;
+
+            if ((tokensNonVerifies[3] == "-") && (tokensNonVerifies[4] == "-") && (tokensNonVerifies[5] == "-") && (tokensNonVerifies[6] == "-")
+                                              && (tokensNonVerifies[7] == "-") && (tokensNonVerifies[8] == "-"))
+            {
+                //Console.WriteLine("Jour férié");
+            }
+            else
+            {
+                string[] tokensVerifies = new string[9];
+
+                for (int i = 0; i < tokensNonVerifies.Length; i++) // Analyse du tableau de tokens non vérifiés et non analysés
+                {
+
+                    if (tokensNonVerifies[i] != "")
+                    {
+                        tokensVerifies[cptTokensVerif] = tokensNonVerifies[i];  // On vient stocker le token qui vient d'être analysé dans le tableau des tokens vérifié
+
+                        switch (tokensVerifies[1])  // On compare le nom du mois pour lui assigner un nombre correspondant au mois
+                        {
+                            case "janv.":
+                                tokensVerifies[1] = "01";
+                                break;
+                            case "févr.":
+                                tokensVerifies[1] = "02";
+                                break;
+                            case "mars":
+                                tokensVerifies[1] = "03";
+                                break;
+                            case "avr.":
+                                tokensVerifies[1] = "04";
+                                break;
+                            case "mai":
+                                tokensVerifies[1] = "05";
+                                break;
+                            case "juin":
+                                tokensVerifies[1] = "06";
+                                break;
+                            case "juil.":
+                                tokensVerifies[1] = "07";
+                                break;
+                            case "août":
+                                tokensVerifies[1] = "08";
+                                break;
+                            case "sept.":
+                                tokensVerifies[1] = "09";
+                                break;
+                            case "oct.":
+                                tokensVerifies[1] = "10";
+                                break;
+                            case "nov.":
+                                tokensVerifies[1] = "11";
+                                break;
+                            case "déc.":
+                                tokensVerifies[1] = "12";
+                                break;
+                        }
+
+                        if (tokensVerifies[8] == "-") { tokensVerifies[8] = "-1"; } // Si on ne connait pas le volume on met -1
+
+                        //Console.WriteLine(tokensVerifies[cptTokensVerif] + " - " + cptTokensVerif); // Affichage tableau tokens triés (analyés) de chaque lignes
+                        cptTokensVerif++;
+                    }
+
+                } // Fin traitement des tokens non vérifiés
+
+                int Date = 0;
+                float[] result = new float[9];
+
+                for (int y = 0; y < tokensVerifies.Length; y++) // Pour chaque case du tableau de token 
+                {
+                    result[y] = Convert.ToSingle(tokensVerifies[y]);
+                }
+                //Console.WriteLine("");
+
+                //Console.WriteLine("Encodage 2 : " + DoEncodeDate((int)result[2], (int)result[1], (int)result[0], ref Date));
+
+                //Console.WriteLine("Date Encodée : " + Date);
+                DoEncodeDate((int)result[2], (int)result[1], (int)result[0], ref Date);
+
+                DonneesBourse curDate = new DonneesBourse
+                {
+                    DateConvertie = Date,
+                    Ouverture = result[3],
+                    Eleve = result[4],
+                    Faible = result[5],
+                    Cloture = result[6],
+                    ClotureAjuste = result[7],
+                    Volume = result[8]
+                };
+
+                FileStream fsBinary = File.Open(fileNameData, FileMode.Append);
+                BinaryWriter writer = new BinaryWriter(fsBinary);
+
+                TraduireBinaire(curDate, writer); // On envoie l'objet writer soit le fichier binaire sur lequel on va écrire
+
+                fsBinary.Close();
+                writer.Close();
+            }
+        }
+
+        static void TraduireBinaire(DonneesBourse curDate, BinaryWriter writer)
+        {
+            // On va convertir la ligne courante en octets dans un fichier de données
+            writer.Write(curDate.DateConvertie);
+            writer.Write(curDate.Ouverture);
+            writer.Write(curDate.Eleve);
+            writer.Write(curDate.Faible);
+            writer.Write(curDate.Cloture);
+            writer.Write(curDate.ClotureAjuste);
+            writer.Write(curDate.Volume);          
+        }
+
+        static void AfficherBinaire()
+        {          
+            FileStream fs = File.Open(fileNameData, FileMode.Open);
+            fs.Seek(0, SeekOrigin.Begin);
+            BinaryReader br = new BinaryReader(fs); //tradui de binaire en données lisibles 
+
+            Console.WriteLine((countLines - 1) * tailleOctetsStruct); // Affiche le nombre d'octets dans le fichier
+            Console.WriteLine(countLines);
+            int i = 0;
+            while (fs.Position < (countLines) * tailleOctetsStruct*4) // On va parcourir tous les octets du fichier
+            {
+                Console.Write(br.ReadSingle() + " ");
+                Console.WriteLine("nbr octet : " + i); i++;
+            }
+            Console.WriteLine("\n-----------------");
+
+            fs.Close();
+            br.Close();            
         }
 
         static void Main(string[] args)
         {
-            BinaryReader br = null;
-            FileStream fs = null;        
-            string[] lines = System.IO.File.ReadAllLines(filePath);
-            int countLines = 0;            
+            string[] lines = File.ReadAllLines(filePath);
+            bw = new BinaryWriter(File.Create(fileNameData)); // vas traduire en binaire et stocker dans la variable visée 
+            bw.Close();
 
-            System.Console.WriteLine("Contenu de CAC_40_1990_test = ");
+            Console.WriteLine("Contenu de CAC_40_1990_test = ");
 
-            foreach (string line in lines)
-            {
-                countLines++;
-                if (line.Length == 0)
-                {
-                    Console.WriteLine("Ligne " + countLines + " vide !");
-                    Console.WriteLine("--------------------------------");
-                }
-                else
-                {                 
-                    Console.WriteLine("Ligne " + countLines + " : " + line);
-                    Console.WriteLine(" ");
-
-                    // string[] stringSep = new string[] { " ", "\t" };
-                    char[] charsSeparateur = new char[] { ' ', (char)9 }; // (char)9 = "\t" qui est le tab
-                    string[] tokensNonVerifies = line.Trim(' ').Split(charsSeparateur);
-                    int cptTokensVerif = 0;
-
-                    if ((tokensNonVerifies[3] == "-") && (tokensNonVerifies[4] == "-") && (tokensNonVerifies[5] == "-") && (tokensNonVerifies[6] == "-")
-                                                      && (tokensNonVerifies[7] == "-") && (tokensNonVerifies[8] == "-"))
-                    {
-                        Console.WriteLine("Jour férié");
-                    }
-
-                    else
-                    {
-                        string[] tokensVerifies = new string[9];
-
-                        for (int i = 0; i < tokensNonVerifies.Length; i++) // Analyse du tableau de tokens non vérifiés et non analysés
-                        {
-
-                            if (tokensNonVerifies[i] != "")
-                            {
-                                tokensVerifies[cptTokensVerif] = tokensNonVerifies[i];  // On vient stocker le token qui vient d'être analysé dans le tableau des tokens vérifié
-
-                                switch (tokensVerifies[1])
-                                {
-                                    case "janv.":
-                                        tokensVerifies[1] = "01";
-                                        break;
-                                    case "févr.":
-                                        tokensVerifies[1] = "02";
-                                        break;
-                                    case "mars":
-                                        tokensVerifies[1] = "03";
-                                        break;
-                                    case "avr.":
-                                        tokensVerifies[1] = "04";
-                                        break;
-                                    case "mai":
-                                        tokensVerifies[1] = "05";
-                                        break;
-                                    case "juin":
-                                        tokensVerifies[1] = "06";
-                                        break;
-                                    case "juil.":
-                                        tokensVerifies[1] = "07";
-                                        break;
-                                    case "août":
-                                        tokensVerifies[1] = "08";
-                                        break;
-                                    case "sept.":
-                                        tokensVerifies[1] = "09";
-                                        break;
-                                    case "oct.":
-                                        tokensVerifies[1] = "10";
-                                        break;
-                                    case "nov.":
-                                        tokensVerifies[1] = "11";
-                                        break;
-                                    case "déc.":
-                                        tokensVerifies[1] = "12";
-                                        break;
-                                }
-
-                                if (tokensVerifies[8] == "-")
-                                {
-                                    tokensVerifies[8] = "-1";
-                                }
-
-                                Console.WriteLine(tokensVerifies[cptTokensVerif] + " - " + cptTokensVerif); // Affichage tableau tokens triés (analyés) de chaque lignes
-                                cptTokensVerif++;
-                            }
-
-                        } // Traitement des tokens non vérifiés
-
-                        int Date = 0;
-
-                        float[] result = new float[9];
-
-                        for (int y = 0; y < tokensVerifies.Length; y++) // Pour chaque case du tableau de token 
-                        {
-                            result[y] = Convert.ToSingle(tokensVerifies[y]);
-                        }
-                        Console.WriteLine("");
-
-                        Console.WriteLine("Encodage 2 : " + DoEncodeDate2((int)result[2], (int)result[1], (int)result[0], ref Date));
-                        Console.WriteLine("Date Encodée : " + Date);
-
-                        DonneesBourse curDate = new DonneesBourse { DateConvertie = Date, Ouverture = result[3], Eleve = result[4],
-                            Faible = result[5], Cloture = result[6], ClotureAjuste = result[7], Volume = result[8] };
-
-                        Console.WriteLine(curDate);
-                        Console.WriteLine(curDate.DateConvertie);
-
-                        using (BinaryWriter writer = new BinaryWriter(File.Open(fileNameData, FileMode.Create)))
-                        {
-                            writer.Write(curDate.DateConvertie);
-                            writer.Write(curDate.Ouverture);
-                            writer.Write(curDate.Eleve);
-                            writer.Write(curDate.Faible);
-                            writer.Write(curDate.Cloture);
-                            writer.Write(curDate.ClotureAjuste);
-                            writer.Write(curDate.Volume);
-                        }
-                   
-                        Console.WriteLine(DoDecodeDate2((int)Date, ref Date));
-                        // Console.WriteLine("Date encodée : " + Date);
-                    }
-                    Console.WriteLine("--------------------------------");
-                } // Fin traitement          
-
-            } // Fin traitement lignes              
-            fs = File.Open(fileNameData, FileMode.Open);
-            fs.Seek((tailleOctetsStruct - 28), SeekOrigin.Begin);
-            br = new BinaryReader(fs);//traduie de binaire en donnée lisible 
-
-            while (fs.Position < tailleOctetsStruct) Console.Write(br.ReadSingle() + " ");
-            Console.WriteLine("\n-----------------");
-            Console.WriteLine(fs.Position);
-
-            br.Close(); // une seul fois
-            // Keep the console window open in debug mode.
-            Console.WriteLine("Press any key to exit.");
+            LectureTxt(lines);
+            AfficherBinaire();
         }        
     }
 }
