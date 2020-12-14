@@ -18,17 +18,27 @@ namespace StructTest1
         public float Volume { get; set; }
     }
 
+    public static class StreamEOF
+    {
+        public static bool EOF(this BinaryReader binaryReader)
+        {
+            var bs = binaryReader.BaseStream;
+            return (bs.Position == bs.Length);
+        }
+    }
+
     class Program
     {
         static public int[] MonthDaysbix = new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
         static public int[] MonthDays = new int[] { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-        static public int tailleOctetsStruct = 7;
+        static public int nombreChampsStruct = 7;
+        static public int nbChampsStructFichData = 0;
         static public char[] charsSeparateur = new char[] { ' ', (char)9 }; // (char)9 = "\t" qui est le tab
         static int countLines = 0;           
         static public BinaryWriter bw;
 
-        static public string filePath = @"..\..\..\..\CAC_40_1990_test.txt";
-        const string fileNameData = @"..\..\..\..\data.dat";
+        static public string dataTextFilePath = @"..\..\..\..\CAC_40_1990_test.txt";
+        const string dataBinaryFilePath = @"..\..\..\..\data.dat";
 
         static int IsLeapYear(int Year) 
         // Recherche si l'année est bisextile ou non
@@ -196,7 +206,7 @@ namespace StructTest1
                     Volume = result[8]
                 };
 
-                FileStream fsBinary = File.Open(fileNameData, FileMode.Append);
+                FileStream fsBinary = File.Open(dataBinaryFilePath, FileMode.Append);
                 BinaryWriter writer = new BinaryWriter(fsBinary);
 
                 TraduireBinaire(curDate, writer); // On envoie l'objet writer soit le fichier binaire sur lequel on va écrire
@@ -218,19 +228,23 @@ namespace StructTest1
             writer.Write(curDate.Volume);          
         }
 
-        static void AfficherBinaire()
+        static void AfficherBinaire(string file)
         {          
-            FileStream fs = File.Open(fileNameData, FileMode.Open);
+            FileStream fs = File.Open(file, FileMode.Open);
             fs.Seek(0, SeekOrigin.Begin);
-            BinaryReader br = new BinaryReader(fs); //tradui de binaire en données lisibles 
+            BinaryReader br = new BinaryReader(fs); //traduit de binaire en données lisibles 
 
-            Console.WriteLine((countLines - 1) * tailleOctetsStruct); // Affiche le nombre d'octets dans le fichier
-            Console.WriteLine(countLines);
-            int i = 0;
-            while (fs.Position < (countLines) * tailleOctetsStruct*4) // On va parcourir tous les octets du fichier
+            var brTaille = br.BaseStream;
+
+            Console.WriteLine("Nombre d'octets dans fichier binaire : " + brTaille.Length);
+            Console.WriteLine("Taille fichier binaire / 2 : " + (brTaille.Length) / 2);
+            Console.WriteLine("");
+
+            while (!br.EOF())
             {
                 Console.Write(br.ReadSingle() + " ");
-                Console.WriteLine("nbr octet : " + i); i++;
+                Console.Write(": Numéro octet : " + nbChampsStructFichData + " | "); nbChampsStructFichData++;
+                Console.WriteLine("Position du reader : " + fs.Position);
             }
             Console.WriteLine("\n-----------------");
 
@@ -238,16 +252,36 @@ namespace StructTest1
             br.Close();            
         }
 
+        static void InverserFichierBinaireTest()
+        {
+            FileStream myFileReader = File.OpenRead(dataBinaryFilePath);
+            long fileSize = myFileReader.Length;
+
+            myFileReader.Seek((7*4)-4, SeekOrigin.Begin);
+            Console.WriteLine("Position du reader : " + myFileReader.Position);
+            BinaryReader br = new BinaryReader(myFileReader); //traduit de binaire en données lisibles 
+
+            //Console.WriteLine(fileSize/4);
+
+            Console.WriteLine(br.ReadSingle() + " ");
+
+            Console.WriteLine("--------------------------------------");
+
+            myFileReader.Close();
+            br.Close();
+        }
+
         static void Main(string[] args)
         {
-            string[] lines = File.ReadAllLines(filePath);
-            bw = new BinaryWriter(File.Create(fileNameData)); // vas traduire en binaire et stocker dans la variable visée 
+            string[] lines = File.ReadAllLines(dataTextFilePath);
+            bw = new BinaryWriter(File.Create(dataBinaryFilePath)); // vas traduire en binaire et stocker dans la variable visée 
             bw.Close();
 
             Console.WriteLine("Contenu de CAC_40_1990_test = ");
 
             LectureTxt(lines);
-            AfficherBinaire();
+            InverserFichierBinaireTest();
+            AfficherBinaire(dataBinaryFilePath);
         }        
     }
 }
