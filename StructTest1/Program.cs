@@ -36,6 +36,8 @@ namespace StructTest1
         static public char[] charsSeparateur = new char[] { ' ', (char)9 }; // (char)9 = "\t" qui est le tab
         static int countLines = 0;           
         static public BinaryWriter bw;
+        static public float[] tableauLigneA = new float[7];
+        static public float[] tableauLigneB = new float[7];
 
         static public string dataTextFilePath = @"..\..\..\..\CAC_40_1990_test.txt";
         const string dataBinaryFilePath = @"..\..\..\..\data.dat";
@@ -260,21 +262,24 @@ namespace StructTest1
             long fileSize = myFileReader.Length;
 
             myFileReader.Seek(0, SeekOrigin.Begin);
+            Console.Write("> "); 
             float test1 = br.ReadSingle();
+            Console.WriteLine(test1);
 
-            myFileReader.Seek(-(fileSize/2)+4*0, SeekOrigin.End);                                
+            myFileReader.Seek(-(fileSize/2)+4*0, SeekOrigin.End);
+            Console.Write(">> ");
             float test2 = br.ReadSingle();
            
-            Console.WriteLine(test1);
+            
             Console.WriteLine(test2);
 
-            myFileReader.Seek((7*4), SeekOrigin.Begin); // Positionne le reader à la position 24 en partant du début du fichier
-            Console.WriteLine("Position du reader : " + myFileReader.Position);
+            //myFileReader.Seek((7*4), SeekOrigin.Begin); // Positionne le reader à la position 28 en partant du début du fichier
+            //Console.WriteLine("Position du reader : " + myFileReader.Position);
             
 
             //Console.WriteLine(fileSize/4);
 
-            Console.WriteLine(br.ReadSingle() + " ");
+            //Console.WriteLine(br.ReadSingle() + " ");
 
             Console.WriteLine("--------------------------------------");
 
