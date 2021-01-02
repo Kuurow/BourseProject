@@ -50,7 +50,7 @@ namespace StructTest1
             return decimalPart;
         }
 
-        static int IsLeapYear(int Year) 
+        static int IsLeapYear(int Year)
         // Recherche si l'année est bisextile ou non
         {
             if (((Year % 4) == 0) && (((Year % 100) != 0)) || ((Year % 400) == 0))
@@ -67,15 +67,71 @@ namespace StructTest1
             if (IsLeapYear(Year) == 1) tabAnnee = MonthDaysbix;
             else tabAnnee = MonthDays;
 
+            
+
             if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Days >= 1) && (Days <= tabAnnee[Month - 1]))
-            {                       
+            {
                 int result = Year * 10000 + Month * 100 + Days;
                 //Console.WriteLine("date convertie : " + result);
+
+                string dateStr = Year.ToString();
+
+                if (Month < 10)
+                {
+                    dateStr += "0" + Month.ToString();
+                }
+                else dateStr += Month.ToString();
+
+                if (Days < 10)
+                {
+                    dateStr += "0" + Days.ToString();
+                }
+                else dateStr += Days.ToString();
+
+                Console.WriteLine(dateStr);
 
                 Date = result;
                 return true;
             }
 
+            Date = -1;
+            return false;
+        }
+
+        static bool DoEncodeDateTest(int Year, int Month, int Day, ref float Date)
+        {
+            int[] tabAnnee;
+            float result = 0;
+            int cptAnneesBis = 0;
+            //float nbJoursDsMois = 0;
+
+            Console.WriteLine("date avant encodage : " + Day + " " + Month + " " + Year);
+
+            if (IsLeapYear(Year) == 1) tabAnnee = MonthDaysbix;
+            else tabAnnee = MonthDays;
+
+            if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Day >= 1) && (Day <= tabAnnee[Month - 1]))
+            {
+                for (int i = 0; i < Year; i++)
+                {
+                    if (IsLeapYear(i) == 1)
+                    {
+                        cptAnneesBis++;
+                    }
+                }
+                result = Year * 365 + cptAnneesBis;
+
+                for (int i = 0; i <= Month-1; i++)
+                {
+                    result += tabAnnee[i];
+                    //nbJoursDsMois += tabAnnee[i];
+                }
+
+                result += Day;
+                Date = result;
+                return true;
+            }
+            Date = -1;
             return false;
         }
 
@@ -98,26 +154,79 @@ namespace StructTest1
             return false;
         }
 
+        static bool DoDecodeDateTest(int convertedDate, ref float decodedDate)
+        {
+            //int bckpDateCvt = convertedDate;
+            int cptNbAnneesBis = 0;
+            int decodedMonth = 0;
+            int[] tabAnnee;
+
+            int J001 = 365; // nombre de jours dans une année
+            int J004 = J001 * 4 + 1; // Nombre de jours dans 4 années
+            int J100 = J004 * 25 - 1; // Nombre de jours dans 100 années
+            int J400 = J100 * 4 + 1; // Nombre de jours dans 400 années
+
+            int A400 = (convertedDate / J400) * 400;    // on recherche le nombre de paquets de 400 ans dans l'année encodée
+            //convertedDate = convertedDate % J400;
+            int A100 = (convertedDate / J100) * 100;    // on recherche le nombre de paquets de 100 ans dans l'année encodée
+            //convertedDate = convertedDate % J100;
+            int A004 = (convertedDate / J004) * 4;      // on recherche le nombre de paquets de 4 ans dans l'année encodée
+            //convertedDate = convertedDate % J004;
+            int A001 = (convertedDate / J001);          // on recherche le nombre de paquets d'un an dans l'année encodée
+            //convertedDate = convertedDate % J001;
+
+            int decodedYear = A400 + A100 + A004 + A001;    // On calcule l'année
+
+            for (int i = 0; i <= decodedYear; i++) // On va calculer le nombre d'années bissextiles entre l'année 0 et l'année décodée
+            {
+                if (IsLeapYear(i)==1)
+                {
+                    cptNbAnneesBis++;
+                    //Console.Write(i + " ");
+                }
+            }
+            float resteDate = convertedDate - (decodedYear * 365 + cptNbAnneesBis); // on retire le nombre de jours par année * l'année décodée et 
+                                                                                    // aussi le nombre de jours qu'il manque avec les années bissextiles
+
+            if (IsLeapYear(decodedYear) == 1) tabAnnee = MonthDaysbix; // On récupère le tableau de jours d'une année 
+            else tabAnnee = MonthDays;                                 // bissextile ou non en fonction de l'année décodée
+
+            for (int i = 0; i <= 12; i++)     // On va trouver le mois à décoder
+            {
+                if (resteDate > tabAnnee[i])  // Si le reste de l'encodage est suppérieur au nombre de jours contenu dans le mois i
+                {
+                    resteDate -= tabAnnee[i]; // On retire le nombre de jours dans le mois
+                    decodedMonth++;           // On incrémente le nombre de mois
+                }
+                else break;
+            }
+
+            //Console.WriteLine(A400 + " " + A100 + " " + A004 + " " + A001 + " année décodée : " + decodedYear);
+            //Console.WriteLine(IsLeapYear(decodedYear));
+            Console.WriteLine("Année décodée : " + decodedYear);
+            Console.WriteLine("Mois décodé : " + decodedMonth);
+            Console.WriteLine("Jour décodé : " + resteDate);
+
+            return true;
+        }
+
         static void LectureTxt(string[] lines)
         // Lecture du fichier txt
         {
             foreach (string line in lines)
             {       
-                if (line.Length == 0)
-                {
-                    //Console.WriteLine("Ligne " + countLines + " vide !");
-                    //Console.WriteLine("--------------------------------");
-                }
-                else
+                if (line.Length != 0)
                 {
                     countLines++;
-                    //Console.WriteLine("Ligne " + countLines + " : " + line);
-                    //Console.WriteLine(" ");
 
                     ConvertirLigne(line);
+                }
+                // Ce bloc était dans un else
+                //Console.WriteLine("Ligne " + countLines + " vide !");
+                //Console.WriteLine("--------------------------------");
 
-                    //Console.WriteLine("--------------------------------");
-                } // Fin traitement          
+
+                // Fin traitement          
 
             } // Fin traitement lignes  
         }
@@ -204,8 +313,13 @@ namespace StructTest1
                 //Console.WriteLine("Encodage 2 : " + DoEncodeDate((int)result[2], (int)result[1], (int)result[0], ref Date));
 
                 //Console.WriteLine("Date Encodée : " + Date);
-                DoEncodeDate((int)result[2], (int)result[1], (int)result[0], ref Date);
-                Console.WriteLine(Date);
+                DoEncodeDateTest((int)result[2], (int)result[1], (int)result[0], ref Date);
+
+                Console.WriteLine("date après conversion : " + Date);
+
+                DoDecodeDateTest((int)Date, ref Date);
+
+                Console.WriteLine("");
 
                 DonneesBourse curDate = new DonneesBourse
                 {
@@ -327,17 +441,29 @@ namespace StructTest1
 
             LectureTxt(lines);
 
-            AfficherBinaire(dataBinaryFilePath);
+            //AfficherBinaire(dataBinaryFilePath);
 
             //LireLigne(1, ref tableauLigneA);
             //LireLigne(4, ref tableauLigneB);
 
-            InverserFichierBinaire();
+            //InverserFichierBinaire();
 
             //EcrireLigne(0, tableauLigneB);
             //EcrireLigne(4, tableauLigneA);
 
-            AfficherBinaire(dataBinaryFilePath);
+            //AfficherBinaire(dataBinaryFilePath);
+
+            //float Date = 0;
+
+            //for (int i = 1; i <= 12; i++)
+            //{
+            //    Console.Write("\n");
+            //    for (int y = 1; y <= 31; y++)
+            //    {
+            //        DoEncodeDate(2020, i, y, ref Date);
+            //        DoDecodeDate((int)Date, ref Date);
+            //    }
+            //}
         }
     }
 }
