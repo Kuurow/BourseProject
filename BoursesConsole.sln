@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BoursesConsole", "StructTest1\BoursesConsole.csproj", "{89F9417A-E06D-4B58-A3D5-9C929FB9B103}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{89F9417A-E06D-4B58-A3D5-9C929FB9B103}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{89F9417A-E06D-4B58-A3D5-9C929FB9B103}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{89F9417A-E06D-4B58-A3D5-9C929FB9B103}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{89F9417A-E06D-4B58-A3D5-9C929FB9B103}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A0671696-5302-430C-A8B2-EBA18A3A9AD9}
+	EndGlobalSection
+EndGlobal
