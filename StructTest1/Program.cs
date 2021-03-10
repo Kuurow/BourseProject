@@ -27,7 +27,6 @@ namespace StructTest1
         }
     }
 
-
     class Program
     {
         static public int[] MonthDaysbix = new int[] { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -42,14 +41,6 @@ namespace StructTest1
         static public string dataTextFilePath = @"..\..\..\..\CAC_40_1990_test.txt";
         const string dataBinaryFilePath = @"..\..\..\..\data.dat";
 
-        static int GetDecimalPart(float number)
-        {
-            var decimalNumber = Convert.ToDecimal(number);
-            int decimalPart = int.Parse((decimalNumber % 1).ToString().Replace("0.", ""));
-
-            return decimalPart;
-        }
-
         static int IsLeapYear(int Year)
         // Recherche si l'année est bisextile ou non
         {
@@ -59,53 +50,13 @@ namespace StructTest1
                 return 0;
         }
 
-       /* static bool DoEncodeDate(int Year, int Month, int Days, ref float Date)
-        // Encodage de la date
-        {
-            int[] tabAnnee;
-
-            if (IsLeapYear(Year) == 1) tabAnnee = MonthDaysbix;
-            else tabAnnee = MonthDays;
-
-            
-
-            if ((Year >= 1) && (Year <= 9999) && (Month >= 1) && (Month <= 12) && (Days >= 1) && (Days <= tabAnnee[Month - 1]))
-            {
-                int result = Year * 10000 + Month * 100 + Days;
-                //Console.WriteLine("date convertie : " + result);
-
-                string dateStr = Year.ToString();
-
-                if (Month < 10)
-                {
-                    dateStr += "0" + Month.ToString();
-                }
-                else dateStr += Month.ToString();
-
-                if (Days < 10)
-                {
-                    dateStr += "0" + Days.ToString();
-                }
-                else dateStr += Days.ToString();
-
-                Console.WriteLine(dateStr);
-
-                Date = result;
-                return true;
-            }
-
-            Date = -1;
-            return false;
-        } */
-
-        static bool DoEncodeDateTest(int Year, int Month, int Day, ref float Date)
+        static bool DoEncodeDate(int Year, int Month, int Day, ref float Date)
         {
             int[] tabAnnee;
             float result = 0;
             int cptAnneesBis = 0;
-            //float nbJoursDsMois = 0;
 
-            Console.WriteLine("date avant encodage : " + Day + " " + Month + " " + Year);
+            //Console.WriteLine("date avant encodage : " + Day + " " + Month + " " + Year);
 
             if (IsLeapYear(Year) == 1) tabAnnee = MonthDaysbix;
             else tabAnnee = MonthDays;
@@ -135,26 +86,7 @@ namespace StructTest1
             return false;
         }
 
-        /*static bool DoDecodeDate(int convertedDate, ref float Date)
-        {
-            if (convertedDate != -1)
-            {
-                Console.WriteLine("Decodage 2 : ");
-
-                int Year = convertedDate / 10000;
-                convertedDate -= Year * 10000;
-                int Month = convertedDate / 100;
-                convertedDate -= Month * 100;
-                int Days = convertedDate;
-
-                Console.WriteLine("année décodée : " + Year + " " + Month + " " + Days);
-                return true;
-            }
-            Date = -1;
-            return false;
-        } */
-
-        static bool DoDecodeDateTest(int convertedDate, ref float decodedDate)
+        static bool DoDecodeDate(int convertedDate, ref float decodedDate)
         {
             //int bckpDateCvt = convertedDate;
             int encodedDate = convertedDate;
@@ -176,7 +108,7 @@ namespace StructTest1
             int A001 = (convertedDate / J001);          // on recherche le nombre de paquets d'un an dans l'année encodée
             convertedDate = convertedDate % J001;
 
-            Console.WriteLine("400ans : " + A400 + " 100ans : " + A100 + " 4ans : " + A004 + " 1an : " + A001);
+            //Console.WriteLine("400ans : " + A400 + " 100ans : " + A100 + " 4ans : " + A004 + " 1an : " + A001);
 
             int decodedYear = A400 + A100 + A004 + A001;    // On calcule l'année
 
@@ -206,9 +138,9 @@ namespace StructTest1
 
             //Console.WriteLine(A400 + " " + A100 + " " + A004 + " " + A001 + " année décodée : " + decodedYear);
             //Console.WriteLine(IsLeapYear(decodedYear));
-            Console.WriteLine("Année décodée : " + decodedYear);
-            Console.WriteLine("Mois décodé : " + decodedMonth);
-            Console.WriteLine("Jour décodé : " + resteDate);
+            //Console.WriteLine("Année décodée : " + decodedYear);
+            //Console.WriteLine("Mois décodé : " + decodedMonth);
+            //Console.WriteLine("Jour décodé : " + resteDate);
 
             return true;
         }
@@ -308,16 +240,10 @@ namespace StructTest1
                 {
                     result[y] = Convert.ToSingle(tokensVerifies[y]);
                 }
-                //Console.WriteLine("");
+                
+                DoEncodeDate((int)result[2], (int)result[1], (int)result[0], ref Date); // Encodage
 
-                //Console.WriteLine("Encodage 2 : " + DoEncodeDate((int)result[2], (int)result[1], (int)result[0], ref Date));
-
-                //Console.WriteLine("Date Encodée : " + Date);
-                DoEncodeDateTest((int)result[2], (int)result[1], (int)result[0], ref Date);
-
-                Console.WriteLine("date après conversion : " + Date);
-
-                DoDecodeDateTest((int)Date, ref Date);
+                DoDecodeDate((int)Date, ref Date); // Decodage
 
                 Console.WriteLine("");
 
@@ -379,8 +305,8 @@ namespace StructTest1
             }
             Console.WriteLine("\n-----------------");
 
-            fs.Close();
-            br.Close();            
+            br.Close();
+            fs.Close();        
         }
 
         static void InverserFichierBinaire()
@@ -389,17 +315,18 @@ namespace StructTest1
             long nbLignes = fs.Length / 28;
             fs.Close();
 
-            Console.WriteLine("Nbr lignes : " + nbLignes + "\n");
+            //Console.WriteLine("Nbr lignes : " + nbLignes + "\n");
 
             for (int i1 = 0; i1 <= (nbLignes/2) - 1; i1++) 
             {
                 int i2 = (int)nbLignes - i1 - 1;
 
-                Console.WriteLine("i1 : " + (i1+1) + " <> i2 : " + (i2+1));
+                //Console.WriteLine("i1 : " + (i1+1) + " <> i2 : " + (i2+1));
 
                 LireLigne(i1, ref tableauLigneA); LireLigne(i2, ref tableauLigneB);
                 EcrireLigne(i1, tableauLigneB); EcrireLigne(i2, tableauLigneA);
             }
+
         }
 
         static void LireLigne(int numLigne, ref float[] tab)
@@ -408,32 +335,28 @@ namespace StructTest1
             fs.Seek(numLigne * 28, SeekOrigin.Begin);
             BinaryReader br = new BinaryReader(fs); //traduit de binaire en données lisibles 
 
-            //Console.WriteLine("Lecture ligne " + numLigne);
-
             for (int i = 0; i < 7; i++)
             {
                 tab[i] = br.ReadSingle();
             }
 
-            fs.Close();
-            br.Close();    
+            br.Close();
+            fs.Close();                
         }
 
-        static void EcrireLigne(int numLigne, float[] tabChangement)
-        {
+        static void EcrireLigne(int numLigne, float[] tabChangement) // On écrit le tableau récupéré par la méthode LireLigne <tabChangement>(passage par référence) 
+        {                                                            // dans le fichier binaire à la ligne souhaitée <numLigne>
             FileStream fs = File.Open(dataBinaryFilePath, FileMode.Open);
-            fs.Seek(numLigne * 28, SeekOrigin.Begin);
+            fs.Seek(numLigne * 28, SeekOrigin.Begin);  // Positionnement du pointeur afin de pouvoir ecrire là où on le veut                 
             BinaryWriter bw = new BinaryWriter(fs);
-
-            //Console.WriteLine("Ecriture ligne " + numLigne);
 
             for (int i = 0; i < 7; i++)
             {
-                bw.Write(tabChangement[i]);
+                bw.Write(tabChangement[i]); // on ecrit la valeur de tabChangement[i] dans le fichier binaire
             }
 
+            bw.Close(); // Fermeture du writer et du filestream afin de pouvoir s'en servir ailleurs
             fs.Close();
-            bw.Close();
         }
 
         static void Main(string[] args)
@@ -446,17 +369,12 @@ namespace StructTest1
 
             LectureTxt(lines);
 
-            //AfficherBinaire(dataBinaryFilePath);
+            AfficherBinaire(dataBinaryFilePath);
 
-            //LireLigne(1, ref tableauLigneA);
-            //LireLigne(4, ref tableauLigneB);
+            InverserFichierBinaire();
+            //Console.WriteLine("inversion du fichier binaire effectuée!\n");
 
-            //InverserFichierBinaire();
-
-            //EcrireLigne(0, tableauLigneB);
-            //EcrireLigne(4, tableauLigneA);
-
-            //AfficherBinaire(dataBinaryFilePath);
+            AfficherBinaire(dataBinaryFilePath);
         }
     }
 }
