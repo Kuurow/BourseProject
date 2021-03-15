@@ -37,6 +37,7 @@ namespace StructTest1
         static public BinaryWriter bw;
         static public float[] tableauLigneA = new float[7];
         static public float[] tableauLigneB = new float[7];
+        static public long nbCotation = 0;
 
         static public string dataTextFilePath = @"..\..\..\..\CAC_40_1990_test.txt";
         const string dataBinaryFilePath = @"..\..\..\..\data.dat";
@@ -245,7 +246,7 @@ namespace StructTest1
 
                 DoDecodeDate((int)Date, ref Date); // Decodage
 
-                Console.WriteLine("");
+                //Console.WriteLine("");
 
                 DonneesBourse curDate = new DonneesBourse
                 {
@@ -289,14 +290,14 @@ namespace StructTest1
             var brTaille = br.BaseStream;
 
             Console.WriteLine("Nombre d'octets dans fichier binaire : " + brTaille.Length);
-            Console.WriteLine("Taille fichier binaire / 2 : " + (brTaille.Length) / 2);
+            //Console.WriteLine("Taille fichier binaire / 2 : " + (brTaille.Length) / 2);
             Console.WriteLine("");
 
             while (!br.EOF())
             {
-                Console.Write(br.ReadSingle() + " ");
-                Console.Write(": Numéro octet : " + nbChampsStructFichData + " | "); nbChampsStructFichData++;
-                Console.WriteLine("Position du reader : " + fs.Position);
+                Console.WriteLine(br.ReadSingle() + " ");
+                //Console.Write(": Numéro octet : " + nbChampsStructFichData + " | "); nbChampsStructFichData++;
+                //Console.WriteLine("Position du reader : " + fs.Position);
                 if (fs.Position % 28 == 0) 
                 {
                     Console.WriteLine(fs.Position / 28);
@@ -312,14 +313,14 @@ namespace StructTest1
         static void InverserFichierBinaire()
         {
             FileStream fs = File.Open(dataBinaryFilePath, FileMode.Open);
-            long nbLignes = fs.Length / 28;
+            nbCotation = fs.Length / 28;
             fs.Close();
 
-            //Console.WriteLine("Nbr lignes : " + nbLignes + "\n");
+            //Console.WriteLine("Nbr lignes : " + nbCotation + "\n");
 
-            for (int i1 = 0; i1 <= (nbLignes/2) - 1; i1++) 
+            for (int i1 = 0; i1 <= (nbCotation/2) - 1; i1++) 
             {
-                int i2 = (int)nbLignes - i1 - 1;
+                int i2 = (int)nbCotation - i1 - 1;
 
                 //Console.WriteLine("i1 : " + (i1+1) + " <> i2 : " + (i2+1));
 
@@ -359,6 +360,18 @@ namespace StructTest1
             fs.Close();
         }
 
+        static void RechercherMinEtMax(String dataBinaryFilePath, float[] tabDeRecherche)
+        {
+            float min = tabDeRecherche[0];
+            float max = tabDeRecherche[0];
+
+
+            for(int i = 0; i < tabDeRecherche.Length; i++)
+            {
+                if(tabDeRecherche)
+            }
+        }
+
         static void Main(string[] args)
         {
             string[] lines = File.ReadAllLines(dataTextFilePath);
@@ -375,6 +388,8 @@ namespace StructTest1
             //Console.WriteLine("inversion du fichier binaire effectuée!\n");
 
             AfficherBinaire(dataBinaryFilePath);
+
+            Console.WriteLine(nbCotation);
         }
     }
 }
